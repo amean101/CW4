@@ -19,6 +19,15 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
   final TextEditingController planController = TextEditingController();
   final List<Plans> plans = [];
   int? editingIndex;
+  Map<String, List<Plans>> weeklyTasks = {
+    'Monday': [],
+    'Tuesday': [],
+    'Wednesday': [],
+    'Thursday': [],
+    'Friday': [],
+    'Saturday': [],
+    'Sunday': [],
+  };
 
   //Method that adds plan
   void _addPlan() {
@@ -64,7 +73,7 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
@@ -99,40 +108,92 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              child: ListView.builder(
-                itemCount: plans.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(plans[index].plan),
-                      leading: Checkbox(
-                        value: plans[index].completionStatus,
-                        onChanged: (value) => _togglePlanCompletion(index),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _editPlan(index),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: plans.length,
+                      itemBuilder: (context, index) {
+                        return Draggable<Plans>(
+                          data: plans[index],
+                          feedback: Material(
+                            child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              color: Colors.blueGrey,
+                              child: Text(plans[index].plan,
+                                  style: const TextStyle(color: Colors.white)),
+                            ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deletePlan(index),
+                          childWhenDragging: Card(
+                            child: ListTile(
+                              title: Text(plans[index].plan,
+                                  style: TextStyle(color: Colors.grey)),
+                            ),
                           ),
-                        ],
-                      ),
+                          child: Card(
+                            color: plans[index].completionStatus ? Colors.green[200] : null,
+                            child: ListTile(
+                              title: Text(plans[index].plan),
+                              leading: Checkbox(
+                                value: plans[index].completionStatus,
+                                onChanged: (value) => _togglePlanCompletion(index),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _editPlan(index),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deletePlan(index),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: weeklyTasks.keys.map((day) {
+                      return DragTarget<Plans>(
+                        onAccept: (plan) {
+                          setState(() {
+                            weeklyTasks[day]!.add(plan);
+                          });
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          return Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.blueGrey[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(day, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                ...weeklyTasks[day]!.map((task) => Text(task.plan)).toList(),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
             ),
-            
-          ],     
+          ],
         ),
       ),
     );
-    
   }
 }
-
