@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class Plans {
   String plan;
   bool completionStatus;
-  Plans({required this.plan, required this.completionStatus});
+  Plans(this.plan, {this.completionStatus = false});
 }
 
 class PlanManagerScreen extends StatefulWidget {
@@ -18,7 +18,32 @@ class PlanManagerScreen extends StatefulWidget {
 class _PlanManagerScreenState extends State<PlanManagerScreen> {
 
   //initialized an empty list of plans that user can add to
-  List<Plans> plans = List.empty(growable: true);
+  final TextEditingController planController = TextEditingController();
+  final List<Plans> plans = [];
+
+  //Method that adds plan
+  void _addPlan() {
+    if (planController.text.isNotEmpty) {
+      setState(() {
+        plans.add(Plans(planController.text));
+        planController.clear();
+      });
+    }
+  }
+
+  //Method that toggles plan completion
+  void _togglePlanCompletion(int index) {
+    setState(() {
+      plans[index].completionStatus = !plans[index].completionStatus;
+    });
+  }
+  
+  //Method that removes the plan
+  void _deletePlan(int index) {
+    setState(() {
+      plans.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
